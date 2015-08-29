@@ -7,15 +7,17 @@ set(LIBRARY_NAME TemplateExercise)
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 #option(test "Build all tests." OFF) # Makes boolean 'test' available.
 if(APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -std=c++11 -stdlib=libc++")
+    # AppleClang doesn't support some latest c++11 feature very well, such as variadic templates. switch to g++
+    set(CMAKE_CXX_COMPILER g++)
+    set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -stdlib=libc++")
 elseif(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -pthread -std=c++11")
+    set(CMAKE_CXX_FLAGS "-g -Wall -pthread -std=c++11")
 endif()
 
-project(${PROJECT_NAME} )
+project(${PROJECT_NAME})
 
 # setup c++ compile options flag
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # setup library name
 add_subdirectory(src)
