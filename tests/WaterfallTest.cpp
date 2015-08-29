@@ -67,9 +67,10 @@ struct Waterfall<T, Ts...> {
     using TailType = typename std::tuple_element<std::tuple_size<std::tuple<Ts...>>::value-1, std::tuple<Ts...>>::type;
 
     Waterfall(typename CallbackStruct<T, HeadType>::f func, Waterfall<Ts...> rest): func_(func), rest_(rest) {}
+
     void operator()(T input, typename Callback<TailType>::f cb) {
         auto passToRest = [&](HeadType pass) {
-            rest(pass,cb);
+            rest_(pass,cb);
         };
         func_(input, passToRest);
     }
@@ -89,21 +90,21 @@ TEST_F(WaterfallTest, TestWaterfallTwo) {
 }
 
 TEST_F(WaterfallTest, TestWaterfallThree) {
-    Waterfall<int, string, string> threeparams(
+    Waterfall<int, string, double> threeparams(
             [](int a, Callback<string>::f callback) {
                 std::stringstream s;
                 s << a;
                 callback(s.str());
             },
-            Waterfall<string, string>(
-                    [](string s, Callback<string>::f callback) {
-                        callback(s + " hahahha");
+            Waterfall<string, double>(
+                    [](string s, Callback<double>::f callback) {
+                        callback(34.56);
                     }
             )
     );
-    /*
-    threeparams(1234, [](string s){
+
+    threeparams(1234, [](double s){
         cout << s << endl;
     });
-     */
+
 }
