@@ -11,6 +11,7 @@
 using std::function;
 using boost::function_traits;
 using namespace std;
+using namespace ::boost::tuples;
 
 class WaterfallTest : public ::testing::Test {
 protected:
@@ -34,6 +35,7 @@ struct CallbackStruct {
 template<typename... Ts>
 struct Waterfall {};
 
+
 template<typename A, typename B>
 struct Waterfall<A, B> {
     Waterfall(typename CallbackStruct<A, B>::f func): func_(func) {}
@@ -42,6 +44,8 @@ struct Waterfall<A, B> {
     }
     typename CallbackStruct<A,B>::f func_;
 };
+
+/*
 
 template<typename A, typename B, typename C>
 struct Waterfall<A, B, C> {
@@ -54,6 +58,23 @@ struct Waterfall<A, B, C> {
     }
     typename CallbackStruct<A, B>::f func1_;
     typename CallbackStruct<B, C>::f func2_;
+};
+ */
+
+template<typename T, typename... Ts>
+struct Waterfall<T, Ts...> {
+    using HeadType = typename boost::tuple<Ts...>::head_type;
+    using TailType = typename std::tuple_element<std::tuple_size<std::tuple<Ts...>>::value-1, std::tuple<Ts...>>::type;
+
+    Waterfall(typename CallbackStruct<T, HeadType>::f func, Waterfall<Ts...> rest): func_(func), rest_(rest) {}
+    void operator()(T input, typename Callback<TailType>::f cb) {
+        auto passToRest = [&](HeadType pass) {
+            rest(pass,cb);
+        };
+        func_(input, passToRest);
+    }
+    typename CallbackStruct<T, HeadType>::f func_;
+    Waterfall<Ts...> rest_;
 };
 
 TEST_F(WaterfallTest, TestWaterfallTwo) {
@@ -73,10 +94,16 @@ TEST_F(WaterfallTest, TestWaterfallThree) {
                 std::stringstream s;
                 s << a;
                 callback(s.str());
-            },      [](string s, Callback<string>::f callback) {
-        callback(s + " hahahha");
-    });
+            },
+            Waterfall<string, string>(
+                    [](string s, Callback<string>::f callback) {
+                        callback(s + " hahahha");
+                    }
+            )
+    );
+    /*
     threeparams(1234, [](string s){
         cout << s << endl;
     });
+     */
 }
