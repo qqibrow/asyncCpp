@@ -91,6 +91,7 @@ struct ErrorCallback {
 template<typename... Ts>
 struct series {};
 
+
 template<typename T>
 struct series<T> {
     void operator()(typename Callback<T>::f func, typename ErrorCallback<T>::f callback) {
@@ -123,3 +124,26 @@ TEST_F(AsyncCollectorsTest, TestSeries) {
     });
 }
 
+struct doFunc {
+    template<typename T>
+    void operator()(T && func) {
+        func();
+    }
+};
+
+#include "ArgPackHelper.h"
+template<typename... Ts>
+void func(Ts&&... args) {
+    for_each_in_arg_pack(doFunc(), forward<Ts>(args)...);
+}
+
+TEST_F(AsyncCollectorsTest, TestTest) {
+    func(
+            []() {
+                cout << "hello" << endl;
+            },
+            []() {
+                cout << "world" << endl;
+            }
+    );
+}
