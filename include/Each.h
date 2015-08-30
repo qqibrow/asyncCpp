@@ -42,6 +42,53 @@ namespace Async {
         }
     };
 
+    template<typename T>
+    struct Predicate {
+        typedef std::function<void (T, std::function<void(bool)>)> f;
+    };
+
+    template<typename T>
+    struct Filter {
+        void operator()(const std::vector<T>& list, typename Predicate<T>::f predicate,
+                        std::function<void(const std::vector<T>&)> collector) {
+            std::vector<bool> indicators(list.size(), false);
+            for(int i = 0; i < list.size(); ++i) {
+                auto setIndicator = [&](bool flag) {
+                    indicators[i] = flag;
+                };
+                predicate(list[i], setIndicator);
+            }
+            // monitor that check is done then do something.
+            std::vector<T> res;
+            for(int i = 0; i < list.size(); ++i) {
+                if(indicators[i]) {
+                    res.push_back(list[i]);
+                }
+            }
+            collector(res);
+        }
+    };
+
+    template<typename T>
+    struct Compose {
+        typedef std::function<void(T accumulate, T now, std::function<void(T)>)>f;
+    };
+
+    template<typename T>
+    struct Foldl {
+        void operator()(const std::vector<T> list, T init, typename Compose<T>::f func,
+                        std::function<void(T)> collector) {
+            T prev = init;
+            for(const auto& now : list) {
+                func(prev, now, [&](T result){
+                    prev = result;
+                });
+            }
+            collector(prev);
+        }
+    };
+
+
 
 }
 

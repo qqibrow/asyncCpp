@@ -44,6 +44,82 @@ TEST_F(AsyncCollectorsTest, TestMapFunc) {
             cout << s;
         }
     });
-
-
 }
+
+TEST_F(AsyncCollectorsTest, TestFilter) {
+    vector<int> numbers = {1, 2, 4, 16, 11, 3, 15};
+    Async::Filter<int> filter;
+    filter(numbers, [](int number, std::function<void (bool)> callback){
+        callback(number > 10);
+    }, [](const vector<int>& res){
+        for(const auto& s : res) {
+            cout << s;
+        }
+    });
+}
+
+TEST_F(AsyncCollectorsTest, TestFoldl) {
+    vector<int> numbers {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    Async::Foldl<int> filter;
+    filter(numbers, 0, [](int accumulate, int now, std::function<void(int)> callback){
+        callback(accumulate + now);
+    }, [](int res) {
+        cout << res << endl;
+    });
+}
+
+template<typename T>
+struct Callback {
+    typedef std::function< void (std::function<void(T)>) > f;
+};
+
+struct Error {};
+
+template<typename... Ts>
+struct ErrorCallback;
+
+template <typename T>
+struct ErrorCallback<T> {
+    typedef std::function<void(Error, T t)> f;
+};
+
+template<typename... Ts>
+struct ErrorCallback {
+    typedef std::function<void(Error, Ts... ts)> f;
+};
+
+template<typename... Ts>
+struct series {};
+
+template<typename T>
+struct series<T> {
+    void operator()(typename Callback<T>::f func, typename ErrorCallback<T>::f callback) {
+
+    }
+};
+
+template<typename T1, typename T2>
+struct series<T1, T2> {
+    void operator()(typename Callback<T1>::f func1, typename Callback<T2>::f func2, typename ErrorCallback<T1, T2>::f callback) {
+
+    }
+};
+
+TEST_F(AsyncCollectorsTest, TestSeries) {
+    series<int> series1;
+    series1([](std::function<void(int)> callback) {
+
+    }, [](Error e, int res) {
+
+    });
+
+    series<int, string> series2;
+    series2([](std::function<void(int)> callback) {
+
+    }, [](std::function<void(string)> callback){
+
+    }, [](Error e, int res1, string res2) {
+
+    });
+}
+
