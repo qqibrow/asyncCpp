@@ -32,7 +32,7 @@ namespace Async {
         void operator()(const std::vector<IType>& list, std::function<void (IType, std::function<void(Otype)>)> func,
         std::function<void(const std::vector<Otype>& )> collector) {
             std::vector<Otype> olist(list.size());
-            for(int i = 0; i < list.size(); ++i) {
+            for(unsigned int i = 0; i < list.size(); ++i) {
                 auto cb = [&](Otype output) {
                     olist[i] = output;
                 };
@@ -53,7 +53,7 @@ namespace Async {
         void operator()(const std::vector<T>& list, typename Predicate<T>::f predicate,
                         std::function<void(const std::vector<T>&)> collector) {
             std::vector<bool> indicators(list.size(), false);
-            for(int i = 0; i < list.size(); ++i) {
+            for(unsigned int i = 0; i < list.size(); ++i) {
                 auto setIndicator = [&](bool flag) {
                     indicators[i] = flag;
                 };
@@ -61,7 +61,7 @@ namespace Async {
             }
             // monitor that check is done then do something.
             std::vector<T> res;
-            for(int i = 0; i < list.size(); ++i) {
+            for(unsigned int i = 0; i < list.size(); ++i) {
                 if(indicators[i]) {
                     res.push_back(list[i]);
                 }
