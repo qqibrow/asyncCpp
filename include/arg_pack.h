@@ -1,9 +1,9 @@
-//
-// Created by Lu Niu on 8/29/15.
-//
-
 #ifndef PROJECTTEMPLATE_ARGPACKHELPER_H
 #define PROJECTTEMPLATE_ARGPACKHELPER_H
+/*
+ *  code from
+ *  http://stackoverflow.com/questions/14261183/how-to-make-generic-computations-over-heterogeneous-argument-packs-of-a-variadic
+ */
 
 #include <type_traits>
 #include <utility>
