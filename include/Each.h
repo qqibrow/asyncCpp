@@ -5,6 +5,7 @@
 #ifndef PROJECTTEMPLATE_EACH_H
 #define PROJECTTEMPLATE_EACH_H
 #include <vector>
+#include <functional>
 
 namespace Async {
     template<typename T>

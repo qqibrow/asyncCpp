@@ -4,9 +4,13 @@
 
 #include "gtest/gtest.h"
 #include "Each.h"
+#include <functional>
+#include <boost/type_traits.hpp>
 #include <iostream>
 #include <map>
+#include <type_traits>
 
+using boost::function_traits;
 class AsyncCollectorsTest : public ::testing::Test {
 protected:
     AsyncCollectorsTest() {};
@@ -124,10 +128,61 @@ TEST_F(AsyncCollectorsTest, TestSeries) {
     });
 }
 
+
+template <typename T>
+struct Trait2;
+
+template <typename R>
+struct Trait2<std::function< void(std::function<void(R)>)> > {
+    typedef R RETURN_TYPE;
+
+};
+
+template <typename T>
+struct Trait;
+
+template <typename R>
+struct Trait<std::function<void(R)>> {
+    typedef R ARG_TYPE;
+
+};
+
+static_assert(std::is_same<Trait<std::function<void(int)>>::ARG_TYPE, int>::value, "int and int is same type");
+static_assert(!std::is_same<Trait<std::function<void(int)>>::ARG_TYPE, std::string>::value, "int and string is not");
+
+template <typename T>
+struct lambda_traits
+        : public lambda_traits<decltype(&T::operator())>
+{};
+// For generic types, directly use the result of the signature of its 'operator()'
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct lambda_traits<ReturnType(ClassType::*)(Args...) const>
+// we specialize for pointers to member function
+{
+    enum { arity = sizeof...(Args) };
+    // arity is the number of arguments.
+
+    typedef ReturnType result_type;
+
+    template <size_t i>
+    struct arg
+    {
+        typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
+        // the i-th argument is equivalent to the i-th tuple element of a tuple
+        // composed of those arguments.
+    };
+};
+
 struct doFunc {
     template<typename T>
-    void operator()(T && func) {
-        func();
+    void operator()(T func) {
+        typedef typename lambda_traits<decltype(func)>::template arg<0>::type TTT;
+        typedef typename Trait<TTT>::ARG_TYPE RETURN_TYPE;
+        auto f = [](RETURN_TYPE a) {
+            cout << a;
+        };
+        func(f);
     }
 };
 
@@ -138,12 +193,18 @@ void func(Ts&&... args) {
 }
 
 TEST_F(AsyncCollectorsTest, TestTest) {
+
     func(
-            []() {
-                cout << "hello" << endl;
+            [](std::function<void(string)> cb) {
+                cb("hello");
             },
-            []() {
-                cout << "world" << endl;
+            [](std::function<void(int)> cb) {
+                cb(5.0);
+            }
+    );
+    doFunc()(
+            [](std::function<void(string)> cb) {
+                cb("hello");
             }
     );
 }
