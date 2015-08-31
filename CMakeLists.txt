@@ -8,8 +8,8 @@ set(LIBRARY_NAME TemplateExercise)
 #option(test "Build all tests." OFF) # Makes boolean 'test' available.
 if(APPLE)
     # AppleClang doesn't support some latest c++11 feature very well, such as variadic templates. switch to g++
-    set(CMAKE_CXX_COMPILER g++)
-    set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -stdlib=libc++")
+    set(CMAKE_CXX_COMPILER g++-5)
+    set(CMAKE_CXX_FLAGS "-g -Wall -pthread -std=gnu++11")
 elseif(UNIX)
     set(CMAKE_CXX_FLAGS "-g -Wall -pthread -std=c++11")
 endif()
