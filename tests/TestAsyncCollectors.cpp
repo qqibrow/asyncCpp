@@ -150,34 +150,12 @@ struct Trait<std::function<void(R)>> {
 static_assert(std::is_same<Trait<std::function<void(int)>>::ARG_TYPE, int>::value, "int and int is same type");
 static_assert(!std::is_same<Trait<std::function<void(int)>>::ARG_TYPE, std::string>::value, "int and string is not");
 
-template <typename T>
-struct lambda_traits
-        : public lambda_traits<decltype(&T::operator())>
-{};
-// For generic types, directly use the result of the signature of its 'operator()'
 
-template <typename ClassType, typename ReturnType, typename... Args>
-struct lambda_traits<ReturnType(ClassType::*)(Args...) const>
-// we specialize for pointers to member function
-{
-    enum { arity = sizeof...(Args) };
-    // arity is the number of arguments.
-
-    typedef ReturnType result_type;
-
-    template <size_t i>
-    struct arg
-    {
-        typedef typename std::tuple_element<i, std::tuple<Args...>>::type type;
-        // the i-th argument is equivalent to the i-th tuple element of a tuple
-        // composed of those arguments.
-    };
-};
-
+#include "lambda_traits.h"
 struct doFunc {
     template<typename T>
     void operator()(T func) {
-        typedef typename lambda_traits<decltype(func)>::template arg<0>::type TTT;
+        typedef typename SO::lambda_traits<decltype(func)>::template arg<0>::type TTT;
         typedef typename Trait<TTT>::ARG_TYPE RETURN_TYPE;
         auto f = [](RETURN_TYPE a) {
             cout << a;
@@ -186,10 +164,10 @@ struct doFunc {
     }
 };
 
-#include "ArgPackHelper.h"
+#include "arg_pack.h"
 template<typename... Ts>
 void func(Ts&&... args) {
-    for_each_in_arg_pack(doFunc(), forward<Ts>(args)...);
+    SO::for_each_in_arg_pack(doFunc(), forward<Ts>(args)...);
 }
 
 TEST_F(AsyncCollectorsTest, TestTest) {
