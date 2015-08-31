@@ -18,13 +18,13 @@ protected:
 TEST_F(TestSeries, TestTest) {
 
     // first check doFunc is working.
-    workflow::doFunc()(
+    workflow::DoTask()(
             [](std::function<void(string)> cb) {
                 cb("hello");
             }
     );
     // check series is working.
-    workflow::func(
+    workflow::series(
             [](std::function<void(string)> cb) {
                 cb("hello");
             },

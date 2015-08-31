@@ -28,7 +28,7 @@ namespace workflow {
     static_assert(!std::is_same<Trait<std::function<void(int)>>::ARG_TYPE, std::string>::value, "int and string is not");
 
 
-    struct doFunc {
+    struct DoTask {
         template<typename T>
         void operator()(T func) {
             typedef typename SO::lambda_traits<decltype(func)>::template arg<0>::type TTT;
@@ -41,8 +41,8 @@ namespace workflow {
     };
 
     template<typename... Ts>
-    void func(Ts&&... args) {
-        SO::for_each_in_arg_pack(doFunc(), std::forward<Ts>(args)...);
+    void series(Ts&&... args) {
+        SO::for_each_in_arg_pack(DoTask(), std::forward<Ts>(args)...);
     }
 }
 
