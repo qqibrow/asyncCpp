@@ -28,6 +28,12 @@ namespace workflow {
     static_assert(!std::is_same<Trait<std::function<void(int)>>::ARG_TYPE, std::string>::value, "int and string is not");
 
 
+    /*
+     * T's type
+     *   [](std::function<void(string)> cb) {
+                cb("hello");
+            }
+     */
     struct DoTask {
         template<typename T>
         void operator()(T func) {
@@ -42,6 +48,7 @@ namespace workflow {
 
     template<typename... Ts>
     void series(Ts&&... args) {
+        std::tuple<Ts...> return_values;
         SO::for_each_in_arg_pack(DoTask(), std::forward<Ts>(args)...);
     }
 }
